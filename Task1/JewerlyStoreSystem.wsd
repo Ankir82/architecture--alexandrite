@@ -1,0 +1,53 @@
+@startuml
+!include https://raw.githubusercontent.com/kirchsth/C4-PlantUML/extended/C4_Container.puml
+
+AddElementTag("new", $bgColor="#d73027")
+LAYOUT_LEFT_RIGHT()
+
+
+Person(customer, "Customer", "Description of external person")
+Person(seller, "Seller", "Operates with order, confirms manufacturing for the user")
+Person(APIuser, "API user", "Description of external person")
+Person(operator, "Operator", "Takes order in work, manufactures jewerly")
+
+System_Boundary(jewerlyStoreSystem, "Jewerly Store System", "[Software system]") {
+  Container(internetShop, "Internet Shop", "Container : Vue, TypeScript, Threejs", "User can make an order, upload 3d models, work in 3d editor")
+  Container(shopAPI, "Shop API", "Container : SpringBoot", "Provide list of shop items, receives user generated or uploaded 3d files, save information about order from customer perspective")
+  ContainerDb(shopDB, "Shop DB", "Container: PostgreSQL", "Holds main information about work with customers and its orders")
+  Container(crm, "CRM", "Container : Vue, TypeScript", "Description of web browser container role/ responsibility")
+  Container(crmAPI, "CRM API", "Container : SpringBoot", "Description of container role / responsibility")
+  ContainerDb(crmDB, "CRM DB", "Container: PostgreSQL", "Holds main information about work with customers and its orders", $tags="new")
+  ContainerQueue(messageQueue, "Messages Queue", "Container: RabbitMQ", "Send message about new orders, changes of statuses between containers, has several topics")
+  Container(3dFilesStorage, "3d files storage", "Container : S3 based storage", "Stores 3d files so that can be calculated")  
+  Container(mes, "MES", "Container : React, TypeScript", "Provide interface to assign orders on operations, shows list of orders")
+  Container(mesAPI, "MES API", "Container : C#", "Assigns orders on operators, show list of orders")
+  Container(calculator, "Cost Calculator", "Container : C#", "Calculates price of the order", $tags="new")
+  ContainerDb(mesDB, "MES DB", "Container: PostgreSQL", "Holds main information about orders, its assignments on operators and statuses from MES perspective")  
+}
+
+Rel_D(customer, internetShop, "", $tags="solid")
+Rel_D(seller, crm, "", $tags="solid")
+Rel_D(APIuser, mesAPI, "", $tags="solid")
+Rel_D(operator, mes, "", $tags="solid")
+
+Rel_D(internetShop, shopAPI, "", $tags="solid")
+Rel_D(shopAPI, shopDB, "", $tags="solid")
+
+Rel_D(crm, crmAPI, "", $tags="solid")
+Rel_D(crmAPI, crmDB, "", $tags="solid")
+
+Rel_D(mes, mesAPI, "", $tags="solid")
+Rel_D(mesAPI, mesDB, "", $tags="solid")
+
+Rel_D(shopAPI, 3dFilesStorage, "", $tags="solid")
+Rel_D(crmAPI, 3dFilesStorage, "", $tags="solid")
+Rel_D(mesAPI, 3dFilesStorage, "", $tags="solid")
+Rel_D(calculator, 3dFilesStorage, "", $tags="solid")
+
+BiRel(mesAPI, messageQueue, "", $tags="solid")
+BiRel(shopAPI, messageQueue, "", $tags="solid")
+BiRel(crmAPI, messageQueue, "", $tags="solid")
+BiRel(calculator, messageQueue, "", $tags="solid")
+
+SHOW_LEGEND()
+@enduml
