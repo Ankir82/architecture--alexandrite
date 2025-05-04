@@ -1,0 +1,28 @@
+@startuml
+!theme C4_united from https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/themes
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Sequence.puml
+
+Person(seller, "Seller")
+
+
+Container(crm, "CRM", "Container: Vue, Typescript")
+Container(crmapi, "CRM API", "Container: SpringBoot")
+Container(cache, "Cache", "Container: Redis")
+ContainerDb(shopDB, "Shop Db", "Container: PostgreeSQL")
+
+Rel(seller, crm, "Получение списка заказов по пользователю")
+Rel(crm, crmapi, "GET getOrders(customerId)")
+Rel(crmapi, cache, "Запрос значени в кеше")
+Rel(cache, crmapi, "Получение значения из кеша")
+
+alt нет значения в кеше
+Rel(crmapi, shopDB, "запрос данных в BD")
+Rel(shopDB, crmapi, "получение данных из BD")
+Rel(crmapi, cache, "запись данных в кеш")
+end
+
+Rel(crmapi, crm, "Получение списка заказов по пользователю")
+Rel(seller, crm, "Получение списка заказов по пользователю")
+
+
+@enduml
